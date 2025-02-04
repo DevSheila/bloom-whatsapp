@@ -38,13 +38,11 @@ export class OpenaiService {
       
       Remember to keep your responses engaging, supportive, and focused on plant health and well-being.`;
 
-
       const userContext = await this.context.saveAndFetchContext(
         userInput,
         'user',
         userID,
       );
-      this.logger.log(userContext);
 
       const response = await this.openai.chat.completions.create({
         messages: [{ role: 'system', content: systemPrompt }, ...userContext],
@@ -60,6 +58,53 @@ export class OpenaiService {
       this.logger.error('Error generating AI response', error);
       // Fail gracefully!!
       return 'Sorry, I am unable to process your request at the moment.';
+    }
+  }
+
+  async analyzeImage(userID: string, imageUrl: string, userInput: string) {
+    try {
+
+      // Prepare image analysis prompt with plant care focus
+      const imageAnalysisPrompt = `Analyze this image from a plant care perspective. 
+            Identify the plant if possible, and provide insights about:
+            - Plant species/type
+            - Potential health issues
+            - Watering and care recommendations
+            - Sunlight and environment assessment`;
+
+      const response = await this.openai.chat.completions.create({
+        model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: userInput? `Analyze this image from a plant care perspective.User caption: ${userInput}`: imageAnalysisPrompt },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: imageUrl,
+                },
+              },
+            ],
+          },
+        ],
+      });
+
+
+      const imageAnalysis = response.choices[0].message.content;
+
+      // Save image analysis to context
+      await this.context.saveToContext(
+        imageAnalysis, 
+        'assistant', 
+        userID
+      );
+  
+      // Return the analysis directly
+      return imageAnalysis;
+    } catch (error) {
+      this.logger.error('Error analyzing image with OpenAI', error);
+      return 'Failed to analyze the image.';
     }
   }
 }

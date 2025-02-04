@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { OpenaiModule } from './openai/openai.module';
 import { UserContextModule } from './user-context/user-context.module';
 import { StabilityaiModule } from './stabilityai/stabilityai.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { StabilityaiModule } from './stabilityai/stabilityai.module';
     OpenaiModule,
     UserContextModule,
     StabilityaiModule,
+    CloudinaryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
